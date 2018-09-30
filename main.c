@@ -28,19 +28,63 @@ FILE *output = NULL;
 char *inputName = "";
 
 static void parse_cmdline(int, char * const []);
+static void read_file(char *fileName, char ***izq, char ***der);
 static void do_usage(const char *, int);
 static void do_version(const char *);
-
 static void do_output(const char *, const char *);
 
 int
 main(int argc, char * const argv[], char * const envp[])
 {
+	char **izq = NULL;
+	char **der = NULL;
 	parse_cmdline(argc, argv);
-	//TODO: leer de archivo
+	read_file(inputName, &izq, &der);
 	//TODO: llamar a quicksort
 
+	// Se libera la memoria que se reservo al leer las lineas del archivo
+	for (char** x=izq; x<=der; x++) {
+		printf("---%s\n", *x);
+		free(*x);
+	}
+	free(izq);
+
 	return 0;
+}
+
+static void
+read_file(char *fileName, char ***izq, char ***der)
+{
+	FILE *input;
+	char line[800];
+	char **first = NULL;
+	char **last = NULL;
+
+	if (!(input = fopen(fileName, "r"))) {
+		fprintf(stderr, "cannot open input file.\n");
+		exit(1);
+	}
+
+	int i=0;
+	while (fgets(line, sizeof(line), input) != NULL) {
+		// Se sacan los caracteres de fin de linea para que no molesten
+		// al querer guardarlos denuevo en un archivo
+		line[strcspn(line, "\f\r\n")] = 0;
+
+		first = (char **)realloc(first, (i+1)*sizeof(char**));
+		first[i] = (char*)malloc(sizeof(line));
+		strcpy(first[i], line);
+
+		i++;
+	}
+
+	if (first) {
+		last = &(first[i-1]);
+	}
+	*izq = first;
+	*der = last;
+
+	fclose(input);
 }
 
 static void
