@@ -26,6 +26,7 @@
 
 FILE *output = NULL;
 char *inputName = "";
+int numeric = 0;
 
 static void parse_cmdline(int, char * const []);
 static void read_file(char *fileName, char ***izq, char ***der);
@@ -113,7 +114,7 @@ parse_cmdline(int argc, char * const argv[])
 			do_output(argv[0], optarg);
 			break;
 		case 'n':
-			//TODO
+			numeric = 1;
 			break;
 		default:
 			do_usage(argv[0], 1);
