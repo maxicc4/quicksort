@@ -24,7 +24,7 @@ main:
     add     $a1, $a0, 36
     li      $t0,0
     move    $s0,$a0
-    li      $a2,0
+    li      $a2,1
     jal     quicksort
     li      $s1,0
 imprimir:
@@ -91,14 +91,20 @@ partition:
     li		$s4, -4		# $s4 = i = -1 
     li		$s5, 0		# $s5 = j = 0
     move    $s6,$ra
+    beq     $s2, $0, loop
+pivot_entero:
+    move    $a0,$s3
+    jal     mi_atoi
+    move    $s3,$v0
 loop:
     add		$t0, $s5, $s0		# $t0 = (char**) &a[j]
     beq     $t0, $s1, fin       # &a[j]== b then fin
     lw      $t1, 0($t0)            # $t1 = (char*) a[j]
-    move    $a1, $t1             # $a1 = a[j]
-    move    $a0, $s3             # $a0 = pivot
-    li		$t0, 0		        # $t0 = 0
-    beq     $s2, $t0, alfa          # si num = 0 comparar alfabeticamente
+    move    $a0, $t1             # $a1 = a[j]
+    move    $a1, $s3             # $a1 = pivot
+    beq     $s2, $0, alfa          # si num = 0 comparar alfabeticamente
+    jal     mi_atoi
+    move 	$a0,$v0		# $ta0,$v0
     jal		cmp_int             # cmp_int(char*pivot,char*a[j]);
     nop
     b		swap_decision			# branch to swap_decision
@@ -107,7 +113,7 @@ alfa:
     nop
 #cmp(pivot,a[j]) = 0 si pivot >= a[j] || 1 si pivot<a[j]
 swap_decision:
-    bne		$v0, $0, next	# if $v0 != 0 (a[j]>pivot) no hay swap
+    beq		$v0, $0, next	# if $v0 != 0 (a[j]>pivot) no hay swap
     add     $a0,$s5,$s0 # $a0 = &a[j]
     addi    $s4,$s4,4   # i+=1
     add     $a1,$s0,$s4 # $a1 = &a[i]
@@ -177,7 +183,7 @@ fin_cmp_alfa:
     
 
 
-#cmp_int(char*a,char*b); 1 si b>a, 0 si a>=b
+#cmp_int(int a,int b); 1 si b>a, 0 si a>=b
 cmp_int:
     addi    $sp,$sp,-12  #manejo del stack
     sw      $s0,8($sp)
@@ -187,14 +193,7 @@ cmp_int:
     move    $s0,$a0     # $s0 = a
     move    $s1,$a1     # $s1 = b
     move    $s2,$ra     # $s2 = ra
-    jal     mi_atoi    # atoi(a)
-    nop
-    move 	$s0,$v0     # $s0 = (int) a
-    move    $a0,$s1     # $a0 = b
-    jal     mi_atoi     # atoi(b)
-    nop
-    move    $s1,$v0     # s1 = (int) b
-    bgt		$s1, $s0, int_b_mayor	# if $s1 > $s0 then int_b_mayor
+    bgt		$a1, $a0, int_b_mayor	# if $s1 > $s0 then int_b_mayor
     nop
 int_a_mayor:
     li		$v0, 0		# return 0
