@@ -20,8 +20,10 @@
 #define optional_argument 2
 #endif
 
+extern void quicksort(char** izq, char** der, int num);
+
 /*
- * Parámetros globales.
+ * Parametros globales.
  */
 
 FILE *output = NULL;
@@ -41,7 +43,7 @@ main(int argc, char * const argv[], char * const envp[])
 	char **der = NULL;
 	parse_cmdline(argc, argv);
 	read_file(inputName, &izq, &der);
-	//TODO: llamar a quicksort
+	quicksort(izq, der, numeric);
 
 	// Se libera la memoria que se reservo al leer las lineas del archivo
 	for (char** x=izq; x<=der; x++) {
