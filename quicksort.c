@@ -91,11 +91,11 @@ char** partition (char** a,char**b, int num){
 } 
   
 
-void quickSort(char** a, char** b, int num){ 
+void quicksort(char** a, char** b, int num){ 
     if (a>b){
         return;
     }
     char** p = partition(a,b,num);  
-    quickSort(a,p-1,num);  
-    quickSort(p+1,b,num);  
+    quicksort(a,p-1,num);  
+    quicksort(p+1,b,num);  
 } 

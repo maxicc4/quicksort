@@ -45,12 +45,14 @@ main(int argc, char * const argv[], char * const envp[])
 	read_file(inputName, &izq, &der);
 	quicksort(izq, der, numeric);
 
-	// Se libera la memoria que se reservo al leer las lineas del archivo
+	// Se imprime el archivo de salida y se libera la memoria 
+	// que se reservo al leer las lineas del archivo
 	for (char** x=izq; x<=der; x++) {
-		printf("---%s\n", *x);
+		fprintf(output, "%s\n", *x);
 		free(*x);
 	}
 	free(izq);
+	fclose(output);
 
 	return 0;
 }
