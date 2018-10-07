@@ -1,0 +1,368 @@
+\documentclass[a4paper,10pt]{article}
+% Intento aprovechar un poco mas toda la hoja.
+\usepackage[cm]{fullpage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Paquetes de fuentes:
+% Input encoding.
+\usepackage[utf8]{inputenc}
+% Ver pagina 92 de "The not so short introduction to Latex" por Tobias Oetiker
+% para entender que hacen estos paquetes.
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{listings}
+
+
+
+\usepackage{vmargin}
+\setpapersize{A4}
+\setmargins{4.5cm}       % margen izquierdo
+{1.5cm}                        % margen superior
+{13.5cm}                      % anchura del texto
+{23.42cm}                    % altura del texto
+{10pt}                           % altura de los encabezados
+{1cm}                           % espacio entre el texto y los encabezados
+{0pt}                             % altura del pie de página
+{2cm}                           % espacio entre el texto y el pie de página
+
+% Paquetes para matematica:
+\usepackage{amsmath}
+	% Formato de numeracion de ecuaciones por seccion. Ej. seccion x, ecuacion y: (x.y)
+	\numberwithin{equation}{section}
+	\numberwithin{figure}{section}
+	% Simbolos matematicos. Por ej. la 'R' de reales, etc...
+	\usepackage{amssymb}
+
+% Paquete para graficos:
+\usepackage{graphicx}
+
+% Paquete que deja sangria luego de comenzada una seccion nueva.
+\usepackage{indentfirst}
+
+\usepackage{color}
+\usepackage{fancyvrb}
+\usepackage{float}
+% Paquete para hacer subrayados, poner textos en color y resaltar texto en color.
+% Lo bueno de este paquete es que no tira errores de fullbox como cuando se usa \colorbox{declared-color}{text}.
+% El unico problema es que no soporta acentos desde el teclado (tira un error de UTF8). Hay que incluirlos usando \'.
+\usepackage{soul}
+
+% Paquete para incluir codigo fuente de MatLab cuando sea necesario.
+%\usepackage[numbered,autolinebreaks]{mcode}
+
+% Incluir la bibliografia en la tabla de contenidos.
+\usepackage[nottoc,numbib]{tocbibind}
+
+%\usepackage{mcode}
+\usepackage{booktabs}
+\usepackage{multirow}
+% Paquete para utilizar hipertexto (tiene que ser siempre el ultimo paquete que se carga).
+% Todos los links, referencias, etc...pasan a ser hipertextos.
+\usepackage[pdftex]{hyperref}
+% Setup del paquete de hipertexto.
+\hypersetup{pdftitle = {75.12 TP2} }
+\hypersetup{colorlinks = false}
+\hypersetup{%
+    pdfborder = {0 0 0}
+}
+\usepackage{booktabs}		%Permiten manejar mejor el tamaño de las tablas
+\usepackage{tabulary}		%Permiten manejar mejor el tamaño de las tablas
+\begin{document}
+
+% Carátula:
+\begin{titlepage}
+
+\thispagestyle{empty}
+
+\begin{center}
+
+\large{\textsc{Universidad de Buenos Aires}}\\
+\large{\textsc{Facultad de Ingeniería}}\\
+\small{Año 2018 - 2\textsuperscript{do} Cuatrimestre}
+\end{center}
+
+\vfill
+
+\begin{center}
+\Large{\underline{\textsc{66.20 Organización de Computadoras - Práctica Jueves}}}
+\end{center}
+
+\vfill
+
+\begin{tabbing}
+\hspace{2cm}\=\+TRABAJO PRÁCTICO 1: conjunto de instrucciones MIPS\\
+	FECHA DE ENTREGA: 11 de Octubre de 2018\\
+\\
+	INTEGRANTES:\hspace{-1cm}\=\+\hspace{1cm}\=\hspace{6cm}\=\\
+		A, Maximiliano	\>\>- \ 11111\\
+			\>\footnotesize{$<$a@gmail.com$>$}\\
+		PEREZ, Flavio	\>\>- \ 11111\\
+			\>\footnotesize{$<$a@gmail.com$>$}\\
+		YACOBUCCI, Maximiliano	\>\>- \ 93321\\
+			\>\footnotesize{$<$maxyacobucci@gmail.com$>$}\\
+\end{tabbing}
+
+\vfill
+
+\hrule
+\vspace{0.2cm}
+
+\noindent\small{66.20 - Organización de Computadoras - Práctica Jueves}
+
+\end{titlepage}
+
+\newpage
+
+
+
+
+
+\section{Introducción}
+
+En este trabajo práctico se busca aprender, practicar y perfeccionar los conocimientos relacionados al conjunto de instrucciones MIPS y el concepto de ABI.
+
+El programa será realizado en lenguaje C a excepción de una función (quicksort) que tendrá dos versiones: una MIPS32 y una en C. El mismo se ejecutará teniendo en cuenta los parámetros que se se especifiquen por consola.
+
+
+
+\section{Diseño e Implementación}
+
+\subsection{Diseño}
+
+El programa consiste en una implementación del algoritmo Quicksort, recibiendo como argumento el archivo que contiene datos que se desean ordenar (se asume que cada cadena de caracteres a ordenar aparece de a una por línea), y devolviendo por stdout los valores ordenados. En caso de errores, se devuelven por stderr.
+
+Asimismo, el programa contará con una sección de ayuda que mostrará las opciones disponibles. El usuario que lo utilice deberá ingresar por línea de comando una serie de parámetros describiendo el archivo que contiene los datos y el archivo de salida, pudiendo indicar si se quiere ordenar números.
+
+Es importante destacar que el programa será portable, teniendo una versión del algoritmo quicksort en C y otra en MIPS32 para dar soporte geńerico a aquellos entornos que carezcan de una versión
+más espećıfica .El programa será compilado y posteriormente enlazado usando herramientas de GNU disponibles en el sistema NetBSD, generando una aplicación ejecutable.
+
+
+\subsection{Implementación}
+
+Inicialmente el programa revisa los parámetros indicados por línea de consola. En caso de no haber errores en ellos se procede a correr el algoritmo correspondiente. Si se solicita ayuda se mostrará el cartel con los comandos disponibles. Si se quiere averiguar la versión del programa, el mismo cuenta con una opción para indicarla. Si en cambio se indicó un archivo para ser ordenado, procederá a leerlo.
+
+Luego de leer el archivo se procede a llamar al algoritmo de quicksort. Como se comentó anteriormente, existen 2 versiones del mismo, una en lenguaje C y otra en MIPS32. Ambos contienen su propia función atoi. En el algoritmo se usan punteros a char siendo identificado el primero como izq y el último como der. En el caso del algoritmo en lenguaje Assembler se hizo uso de la ABI, almacenando por el callee a los argumentos correspondientes a los registros a0-a3.
+
+Por último, se libera la memoria utilizada y se imprimen en pantalla por stdout los datos ordenados,
+
+
+
+
+
+\section{Comando para compilar el programa}
+
+En primer lugar para compilar el programa se debe abrir una consola, pararse en la carpeta correspondiente al programa y ejecutar la siguiente sentencia para compilarlo:
+
+\begin{center}
+gcc -std=c99 -o qsort main.c quicksort.S
+\end{center}
+
+En caso que se quiera utilizar la versión del algoritmo de quicksort en C:
+
+\begin{center}
+gcc -std=c99 -o qsort main.c quicksort.c
+\end{center}
+
+
+Luego se lo puede ejecutar en cualquiera de sus 3 usos:
+
+\begin{enumerate}
+	\item "./qsort -h": muestra la ayuda que indica las diferentes formas de ejecutar el programa
+	\item "./qsort -V": muestra la versión del programa
+	\item "./qsort [options] archivo"; ejercuta el programa teniendo como entrada el archivo indicado
+\end{enumerate}
+
+
+En este último caso de uso se pueden indicar las siguiente opciones:
+
+\begin{enumerate}
+	\item -o, --output: Archivo de salida
+	\item -n, --numeric: Para ordenar los datos numéricamente en vez de alfabéticamente
+\end{enumerate}
+
+
+\section{Resultados obtenidos}
+
+
+A continuación se mencionarán algunas pruebas realizadas con sus correspondientes resultados. Recordar previamente compilar el programa tal como se explicó en la sección anterior.
+
+\begin{itemize}
+\item  ./qsort -h
+\end{itemize}
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+        Usage:
+
+            ./qsort -h
+
+            ./qsort -V
+
+            ./qsort [options] archivo
+
+        Options:
+
+            -h, --help  Imprime ayuda.
+
+            -V, --version  Version del programa.
+
+            -o, --output  Archivo de salida.
+
+            -n, --numeric  Ordenar los datos numericamente en vez de alfabeticamente.
+
+        Examples:
+
+            ./qsort -n numeros.txt
+    }%
+}
+
+
+\begin{itemize}
+\item  ./qsort -V
+\end{itemize}
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+        1.0
+    }%
+}
+
+\begin{itemize}
+\item  ./qsort numeros.txt (conteniendo este archivo 10 numeros del 1 al 10 desordenados)
+\end{itemize}
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+        ---1
+
+        ---10
+
+        ---2
+
+        ---3
+
+        ---4
+
+        ---5
+
+        ---6
+
+        ---7
+
+        ---8
+
+        ---9
+    }%
+}
+
+Como se puede observar, los números salieron ordenados alfabeticamente, estando el 10 luego del 1.
+
+\begin{itemize}
+\item  ./qsort -n numeros.txt
+\end{itemize}
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+        ---1
+
+        ---2
+
+        ---3
+
+        ---4
+
+        ---5
+
+        ---6
+
+        ---7
+
+        ---8
+
+        ---9
+
+        ---10
+    }%
+}
+
+En este caso los números se ordenaron numéricamente, estando el 10 luego del 9.
+
+\begin{itemize}
+\item  ./qsort text1.txt
+\end{itemize}
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+        --- aaaaaaa
+
+        ---aaaaaaa
+
+        ---aaaaaaa a
+
+        ---aaaaaaa b
+
+        ---aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+        ---hola
+
+        ---que
+
+        ---tal
+    }%
+}
+
+Aquí se observa que el programa ordenó el archivo alfabéticamente, teniendo en cuenta también el texto siguiente al espacio en una línea. Lo mismo sucederá en el siguiente ejemplo.
+
+\begin{itemize}
+\item  ./qsort zeta.txt
+\end{itemize}
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+        ---zzzzzzzzzzzz a
+
+        ---zzzzzzzzzzzz b
+
+        ---zzzzzzzzzzzz sabia que Asuntos Internos le tendia una trampa
+    }%
+}
+
+
+\begin{itemize}
+\item  ./qsort archivoInexistente.txt
+\end{itemize}
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+cannot open input file.
+    }%
+}
+
+Al no existir el archivo indicado en la instrucción, el programa tira un error descripivo.
+
+\begin{itemize}
+\item  ./qsort vacio.txt
+\end{itemize}
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+NO ESTA FUNCIONANDO,
+    }%
+}
+
+\begin{itemize}
+\item  ./qsort -n -o - numeros.txt archivo.txt
+\end{itemize}
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+DEBERIA GUARDAR EN ARCHIVO.TXT?
+}%
+}
+
+\begin{itemize}
+\item  ./qsort -n -o - alice.txt
+\end{itemize}
+\noindent\fbox{%
+    \parbox{\textwidth}{%
+TIRA ERROR
+}%
+}
+
+\section{Conclusiones}
+
+En este trabajo práctico hemos aprendido a combinar programación en C con MIPS32 logrando una portabilidad que puede ser importante en caso de ser necesario. Asimismo, pudimos observar cómo un algoritmo realizado en C, puede traducirse en Assembler, viendo detalladamente como surgen las distintas instrucciones. Relacionado a esto último, se hizo uso de la ABI, almacenando por el callee a los argumentos correspondientes a los registros a0-a3, comprendiendo la importancia de su uso.
+
+
+\end{document}
