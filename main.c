@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <getopt.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #ifndef VERSION
 #define VERSION "1.0"
@@ -69,7 +71,15 @@ read_file(char *fileName, char ***izq, char ***der)
 		fprintf(stderr, "cannot open input file.\n");
 		exit(1);
 	}
-
+	struct stat stat_record;
+	if(stat(fileName, &stat_record)){
+		fprintf(stderr, "cannot open input file.\n");
+		exit(1);
+		}
+	else if(stat_record.st_size <= 1){
+		fprintf(stderr, "Error. Empty file.\n");
+		exit(1);
+		}
 	int i=0;
 	while (fgets(line, sizeof(line), input) != NULL) {
 		// Se sacan los caracteres de fin de linea para que no molesten
