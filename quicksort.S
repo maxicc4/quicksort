@@ -132,22 +132,40 @@ swap:
 
 ##cmp_alfa(char*a,char*b); 1 si b>a, 0 si a>=b
 cmp_alfa:
-    ## no tiene data ni subrutinas, no hay manejo de stackframe
-    li  t0,0   # t0 = i = 0
-    li  t3,0   # t3 = 0 guardaremos a[i]
-    li  t4,0   # t4 = 0 guardaremos b[i]
+##Prólogo
+    addiu   sp,sp,-32    #manejo del stack
+    sw		s0, 16(sp)	 # en s0 guardaremos el pivot	
+    sw      s1, 20(sp)    # en s1 guardaremos un contador i
+    sw      s2, 24(sp)    # en s2 guardaremos un contador j
+    sw      ra, 28(sp)    # guardamos la direccion de retorno
+    
+    ##guardamos los argumentos en el stackframe del caller
+    sw      a0, 32(sp)    
+    sw      a1, 36(sp)
+
+    li  s0,0   # s0 = i = 0
+    li  s1,0   # s1 = 0 guardaremos a[i]
+    li  s2,0   # s2 = 0 guardaremos b[i]
+
 loop_cmp_alfa:
-    add    t1,a0,t0  # t1 = &a[i]
-    add    t2,a1,t0  # t2 = &b[i]
-    lbu    t3,0(t1)   # t3 = a[i]
-    lbu    t4,0(t2)   # t4 = b[i]
-    beq    t4,0,a_mayor # si b[i] == '\0' return 0
-    nop
-    beq     t3,0,b_mayor # si a[i] == '\0' return 1
-    bgt		t3, t4, a_mayor	# if a[i] > b[i] then a_mayor
-    bgt     t4, t3, b_mayor   # if b[i] > a[i] then b_mayor
-    addi    t0, t0, 1         # i += 1
-    b loop_cmp_alfa
+    lw      a0,32(sp)
+    lw      a1,36(sp)
+    add     t1,a0,s0     # t1 = &a[i]
+    add     t2,a1,s0     # t2 = &b[i]
+    lbu     s1,0(t1)     # s1 = a[i]
+    lbu     s2,0(t2)     # s2 = b[i]
+    beq     s2,0,a_mayor # si b[i] == '\0' return 0
+    beq     s1,0,b_mayor # si a[i] == '\0' return 1
+    move    a0,s1        
+    jal     minuscula    # convertimos a minuscula a[1]
+    move    s1,v0
+    move    a0,s2
+    jal     minuscula    # convertimos a minuscula a[2]
+    move    s2,v0
+    bgt	    s1, s2, a_mayor	  # if a[i] > b[i] then a_mayor
+    bgt     s2, s1, b_mayor   # if b[i] > a[i] then b_mayor
+    addi    s0, s0, 1         # i += 1
+    b       loop_cmp_alfa
     nop
 a_mayor:
     li  v0,0       #return 0
@@ -158,8 +176,23 @@ b_mayor:
     b fin_cmp_alfa
     nop
 fin_cmp_alfa:
-    jr		ra					# jump to ra
+    ##Epílogo
+    lw		s0, 16(sp)	#reponemos el stack 
+    lw      s1, 20(sp)
+    lw      s2, 24(sp)
+    lw      ra, 28(sp)
+    addiu   sp,sp,32
+    jr		ra				# jump to ra
     
+minuscula:
+    bgt a0,90,no_hacer_nada #si a0>90=Z, no hacemos nada
+    blt a0,65,no_hacer_nada #si a0<65=A, no hacemos nada
+    addi v0,a0,32           # min - MAY = 32
+    b	fin_minuscula	    # branch to fin_minuscula
+no_hacer_nada:
+    addi v0,a0,0
+fin_minuscula:
+    jr  ra
 
 
 ##cmp_int(int a,int b); 1 si b>a, 0 si a>=b
