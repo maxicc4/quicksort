@@ -134,9 +134,9 @@ swap:
 cmp_alfa:
 ##Prólogo
     addiu   sp,sp,-32    #manejo del stack
-    sw		s0, 16(sp)	 # en s0 guardaremos el pivot	
-    sw      s1, 20(sp)    # en s1 guardaremos un contador i
-    sw      s2, 24(sp)    # en s2 guardaremos un contador j
+    sw		s0, 16(sp)	 # en s0 guardaremos contador i	
+    sw      s1, 20(sp)    # en s1 guardaremos a[i]
+    sw      s2, 24(sp)    # en s2 guardaremos b[i]
     sw      ra, 28(sp)    # guardamos la direccion de retorno
     
     ##guardamos los argumentos en el stackframe del caller
@@ -148,7 +148,7 @@ cmp_alfa:
     li  s2,0   # s2 = 0 guardaremos b[i]
 
 loop_cmp_alfa:
-    lw      a0,32(sp)
+    lw      a0,32(sp)   #recuperamos los argumentos del stackframe del caller
     lw      a1,36(sp)
     add     t1,a0,s0     # t1 = &a[i]
     add     t2,a1,s0     # t2 = &b[i]
