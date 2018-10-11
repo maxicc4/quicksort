@@ -2,21 +2,6 @@
 #include <sys/syscall.h>
 
 
-    .data
-vec0:   .asciiz "14\n"
-vec1:   .asciiz "-5\n"
-vec2:   .asciiz "2\n"
-vec3:   .asciiz "28\n"
-vec4:   .asciiz "50\n"
-vec5:   .asciiz "8\n"
-vec6:   .asciiz "3\n"
-vec7:   .asciiz "70\n"
-vec8:   .asciiz "1\n"
-vec9:   .asciiz "50\n"
-
-vector: .word   vec0, vec1, vec2, vec3, vec4, vec5, vec6, vec7, vec8, vec9
-
-
 ## quicksort(char** a, char** b, int num);
 ## arreglo = [a,....,b]
 ## si num = 0 se ordena alfabeticamente
@@ -24,31 +9,7 @@ vector: .word   vec0, vec1, vec2, vec3, vec4, vec5, vec6, vec7, vec8, vec9
 
     .text
 
-    .abicalls
     .align 2                    # alineacion 2^2
-
-
-main:
-    la		a0, vector		#cargamos vector 
-    add     a1, a0, 36
-    li      t0,0
-    move    s0,a0
-    li      a2,0
-    jal     quicksort
-    li      s1,0
-imprimir:
-    bgt     s1,36,fin_main
-    add    t0,s0,s1
-    lw      a0,0(t0)
-    li   v0,4
-    syscall
-    addi    s1,s1,4
-    b		imprimir			# branch to imprimir
-fin_main:
-    li   v0,10
-    syscall
-
-
 
     .globl  quicksort
     .ent    quicksort
