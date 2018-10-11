@@ -10,7 +10,7 @@ void swap(char** a, char**b){
 } 
 
 char minuscula(char may){
-    if (may>90){
+    if (may>90||may<65){
         return may;
     }
     return (may + 32);
