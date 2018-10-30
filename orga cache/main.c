@@ -66,7 +66,10 @@ static void process_file(char *fileName)
 				exit(1);
 			}
 			address = atoi(token);
-
+			if (address >= PPAL_MEM_SIZE) {
+				fprintf(stderr, "Error, direccion invalida en la linea %d.\n", i);
+				exit(1);
+			}
 			token = strtok(NULL, " ");
 			if (token == NULL) {
 				fprintf(stderr, "Error al procesar el archivo en la linea %d.\n", i);
@@ -82,6 +85,10 @@ static void process_file(char *fileName)
 				exit(1);
 			}
 			address = atoi(token);
+			if (address >= PPAL_MEM_SIZE) {
+				fprintf(stderr, "Error, direccion invalida en la linea %d.\n", i);
+				exit(1);
+			}
 			printf("%d", read_byte(address));
 		} else if (strncmp(token, "MR", 2) == 0) {
 			printf("%d%%", get_miss_rate());
