@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 //DATO
 #define VIAS 4
 
@@ -35,7 +36,6 @@ typedef struct{
 
 static Cache_Slot cache_mem [SETS][VIAS]; 
 static char ppal_mem [BLOCKS][BLOCK_SIZE];
-static double miss_rate;
 static size_t misses;
 static size_t accesos;
 
@@ -180,5 +180,9 @@ int write_byte(int address, char value){
     misses+=1;
     return 0;
 
+}
+
+int get_miss_rate(){
+    return roundf(((float)misses/accesos)*100);
 }
 

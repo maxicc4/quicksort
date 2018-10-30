@@ -32,8 +32,7 @@ int main(int argc, char * const argv[], char * const envp[])
 static void process_file(char *fileName)
 {
 	FILE *input;
-	char line[800];
-	char operacion[4];
+	char line[20];
 	int address, value;
 	char *token;
 
@@ -53,7 +52,7 @@ static void process_file(char *fileName)
 	while (fgets(line, sizeof(line), input) != NULL) {
 		// Se sacan los caracteres de fin de linea para que no molesten
 		line[strcspn(line, "\f\r\n")] = 0;
-		printf("%s: ", line);
+		printf("%s:  ", line);
 		token = strtok(line, " ");
 		if (token == NULL) {
 			fprintf(stderr, "Error al procesar el archivo en la linea %d.\n", i);
@@ -85,8 +84,7 @@ static void process_file(char *fileName)
 			address = atoi(token);
 			printf("%d", read_byte(address));
 		} else if (strncmp(token, "MR", 2) == 0) {
-			// TODO: llamar funcion miss rate
-			printf("miss rate");
+			printf("%d%%", get_miss_rate());
 		} else {
 			fprintf(stderr, "Error al procesar el archivo en la linea %d.\n", i);
 			exit(1);
