@@ -150,36 +150,41 @@ A continuación se adjuntan porciones del código assembly, junto con un diagram
 
 
 \subsubsection{Código Assembly Quicksort}
+\setmargins{2cm}{1.5cm}{13.5cm}{23.42cm}{10pt}{1cm}{0pt}
+{2cm}
 \begin{lstlisting}[language=c, numbers=none]
 ## void quicksort(char** a, char** b, int mum);
 quicksort:
     ## if (a>b) return;
     bgt		a0, a1, fin_quicksort	# if a0 > a1 then fin_quicksort  
-    
 ##Prologo
-    addiu   sp,sp,-24
-    sw      s0,16(sp)     #en s0 guardaremos el resultado de partition
-    sw      ra,20(sp)     #Guardamos la direccion de retorno
-
+    addiu   sp,sp,-32     #stack frame de 8 palabras
+    sw      fp,24(sp)
+    move    fp,sp
+    sw      s0,16(fp)     #en s0 guardaremos el resultado de partition
+    sw      gp,20(fp)     
+    sw      ra,28(fp)     #Guardamos la direccion de retorno
     ##Guardamos los argumentos en el stackframe del caller
-    sw      a0,24(sp)
-    sw      a1,28(sp)
-    sw      a2,32(sp)
+    sw      a0,32(fp)
+    sw      a1,36(fp)
+    sw      a2,40(fp)
     jal     partition
     move    s0,v0         #s0 = char** x = partition(a,b,num)
-    lw      a0,24(sp)     
+    lw      a0,32(fp)     
     addi    a1,v0,-4
-    lw      a2,32(sp)
-    jal     quicksort       #quicksort(a,x-1,num)
+    lw      a2,40(fp)
+    jal     quicksort       #quicksort(a,x-1,num) (x = v0)
     addi    a0,s0,4
-    lw      a1,28(sp)
-    lw      a2,32(sp)
+    lw      a1,36(fp)
+    lw      a2,40(fp)
     jal     quicksort       #quicksort(x+1,b,num)
-
 ##Epílogo
-    lw      s0,16(sp)
-    lw      ra,20(sp)
-    addiu   sp,sp,24
+    lw      s0,16(fp)
+    lw      gp,20(fp)
+    lw      ra,28(fp)
+    move    sp,fp
+    lw      fp,24(sp)
+    addiu   sp,sp,32
 fin_quicksort:
     jr		ra					# jump to ra
 
@@ -199,17 +204,21 @@ fin_quicksort:
 ## char** partition(char** a, char** b, int num)
 partition:
 ##Prólogo
-    addiu   sp,sp,-32    #manejo del stack
-    sw		s0, 16(sp)	# en s0 guardaremos el pivot	
-    sw      s1, 20(sp)    # en s1 guardaremos un contador i
-    sw      s2, 24(sp)    # en s2 guardaremos un contador j
-    sw      ra, 28(sp)    # guardamos la direccion de retorno
+    addiu   sp,sp,-40    #stack frame de 10 palabras
+    
+    sw      fp, 32(sp)   
+    move    fp, sp
+    sw		s0, 16(fp)	  # en s0 guardaremos el pivot	
+    sw      s1, 20(fp)    # en s1 guardaremos un contador i
+    sw      s2, 24(fp)    # en s2 guardaremos un contador j
+    sw      gp, 28(fp)
+    sw      ra, 36(fp)    # guardamos la direccion de retorno
     
     ##guardamos los argumentos en el stackframe del caller
-    sw      a0, 32(sp)    
-    sw      a1, 36(sp)
-    sw      a2, 40(sp)
-    nop
+    sw      a0, 40(fp)    
+    sw      a1, 44(fp)
+    sw      a2, 48(fp)
+
     lw      s0, 0(a1)     # s0 = pivot (char*)
     li		s1, -4		    # s4 = i = -1 
     li		s2, 0		    # s5 = j = 0
@@ -220,9 +229,9 @@ pivot_entero:
     move    s0,v0
 loop:
     ##cargamos los argumentos desde el stackframe del caller
-    lw      a0, 32(sp)        
-    lw      a1, 36(sp)
-    lw      a2, 40(sp)
+    lw      a0, 40(fp)        
+    lw      a1, 44(fp)
+    lw      a2, 48(fp)
     
     add		t0, s2, a0		# t0 = (char**) &a[j]
     beq     t0, a1, fin       # si &a[j] == b then fin
@@ -238,11 +247,11 @@ loop:
     b		swap_decision			# branch to swap_decision
 alfa:
     jal     cmp_alfa            #cmp_alfa(char*pivot,char*a[j]);
-    nop
-##cmp(pivot,a[j]): = 0 si pivot>=a[j]|| 1 si a[j]>pivot
+
+                                #cmp(pivot,a[j]): = 0 si pivot>=a[j]|| 1 si a[j]>pivot
 swap_decision:
     bgt		v0,0, next	# si pivot >= a[j] hay swap, si no, next
-    lw      a0, 32(sp)    # a0 = a
+    lw      a0, 40(fp)    # a0 = a
     addi    s1,s1,4   # i+=1
     add     a1,a0,s1 # a1 = &a[i]
     add     a0,a0,s2 # a0 = &a[j]
@@ -256,15 +265,19 @@ fin:
     add     a0,a0,s1     # a0 = &a[i]
     jal     swap            # swap(char** a[i], char** &pivot);
     nop
-    lw      a0, 32(sp)
+    lw      a0, 40(fp)
     add     v0, a0, s1    #return &a[i] = a + i
 ##Epílogo
-    lw		s0, 16(sp)	#reponemos el stack 
-    lw      s1, 20(sp)
-    lw      s2, 24(sp)
-    lw      ra, 28(sp)
-    addiu   sp,sp,32
+    lw		s0, 16(fp)	#reponemos el stack 
+    lw      s1, 20(fp)
+    lw      s2, 24(fp)
+    lw      gp, 28(fp)
+    lw      ra, 36(fp)
+    move    sp,fp
+    lw      fp,32(sp)
+    addiu   sp,sp,40
     jr		ra				# jump to ra
+    
 \end{lstlisting}
 
 \begin{figure}[h]
@@ -274,6 +287,7 @@ fin:
   \label{fig:stack}
 \end{figure}
 
+\setmargins{4.5cm}{1.5cm}{13.5cm}{23.42cm} {10pt}{1cm}{2cm}    
 
 \section{Comando para compilar el programa} 
 
@@ -813,31 +827,34 @@ void quicksort(char** a, char** b, int num){
 quicksort:
     ## if (a>b) return;
     bgt		a0, a1, fin_quicksort	# if a0 > a1 then fin_quicksort  
-    
 ##Prologo
-    addiu   sp,sp,-24
-    sw      s0,16(sp)     #en s0 guardaremos el resultado de partition
-    sw      ra,20(sp)     #Guardamos la direccion de retorno
-
+    addiu   sp,sp,-32     #stack frame de 8 palabras
+    sw      fp,24(sp)
+    move    fp,sp
+    sw      s0,16(fp)     #en s0 guardaremos el resultado de partition
+    sw      gp,20(fp)     
+    sw      ra,28(fp)     #Guardamos la direccion de retorno
     ##Guardamos los argumentos en el stackframe del caller
-    sw      a0,24(sp)
-    sw      a1,28(sp)
-    sw      a2,32(sp)
+    sw      a0,32(fp)
+    sw      a1,36(fp)
+    sw      a2,40(fp)
     jal     partition
     move    s0,v0         #s0 = char** x = partition(a,b,num)
-    lw      a0,24(sp)     
+    lw      a0,32(fp)     
     addi    a1,v0,-4
-    lw      a2,32(sp)
-    jal     quicksort       #quicksort(a,x-1,num)
+    lw      a2,40(fp)
+    jal     quicksort       #quicksort(a,x-1,num) (x = v0)
     addi    a0,s0,4
-    lw      a1,28(sp)
-    lw      a2,32(sp)
+    lw      a1,36(fp)
+    lw      a2,40(fp)
     jal     quicksort       #quicksort(x+1,b,num)
-
 ##Epílogo
-    lw      s0,16(sp)
-    lw      ra,20(sp)
-    addiu   sp,sp,24
+    lw      s0,16(fp)
+    lw      gp,20(fp)
+    lw      ra,28(fp)
+    move    sp,fp
+    lw      fp,24(sp)
+    addiu   sp,sp,32
 fin_quicksort:
     jr		ra					# jump to ra
 
@@ -845,21 +862,24 @@ fin_quicksort:
     .size   quicksort,.-quicksort
     
     
-    
 ## char** partition(char** a, char** b, int num)
 partition:
 ##Prólogo
-    addiu   sp,sp,-32    #manejo del stack
-    sw		s0, 16(sp)	# en s0 guardaremos el pivot	
-    sw      s1, 20(sp)    # en s1 guardaremos un contador i
-    sw      s2, 24(sp)    # en s2 guardaremos un contador j
-    sw      ra, 28(sp)    # guardamos la direccion de retorno
+    addiu   sp,sp,-40    #stack frame de 10 palabras
+    
+    sw      fp, 32(sp)   
+    move    fp, sp
+    sw		s0, 16(fp)	  # en s0 guardaremos el pivot	
+    sw      s1, 20(fp)    # en s1 guardaremos un contador i
+    sw      s2, 24(fp)    # en s2 guardaremos un contador j
+    sw      gp, 28(fp)
+    sw      ra, 36(fp)    # guardamos la direccion de retorno
     
     ##guardamos los argumentos en el stackframe del caller
-    sw      a0, 32(sp)    
-    sw      a1, 36(sp)
-    sw      a2, 40(sp)
-    nop
+    sw      a0, 40(fp)    
+    sw      a1, 44(fp)
+    sw      a2, 48(fp)
+
     lw      s0, 0(a1)     # s0 = pivot (char*)
     li		s1, -4		    # s4 = i = -1 
     li		s2, 0		    # s5 = j = 0
@@ -870,9 +890,9 @@ pivot_entero:
     move    s0,v0
 loop:
     ##cargamos los argumentos desde el stackframe del caller
-    lw      a0, 32(sp)        
-    lw      a1, 36(sp)
-    lw      a2, 40(sp)
+    lw      a0, 40(fp)        
+    lw      a1, 44(fp)
+    lw      a2, 48(fp)
     
     add		t0, s2, a0		# t0 = (char**) &a[j]
     beq     t0, a1, fin       # si &a[j] == b then fin
@@ -888,11 +908,11 @@ loop:
     b		swap_decision			# branch to swap_decision
 alfa:
     jal     cmp_alfa            #cmp_alfa(char*pivot,char*a[j]);
-    nop
-##cmp(pivot,a[j]): = 0 si pivot>=a[j]|| 1 si a[j]>pivot
+
+                                #cmp(pivot,a[j]): = 0 si pivot>=a[j]|| 1 si a[j]>pivot
 swap_decision:
     bgt		v0,0, next	# si pivot >= a[j] hay swap, si no, next
-    lw      a0, 32(sp)    # a0 = a
+    lw      a0, 40(fp)    # a0 = a
     addi    s1,s1,4   # i+=1
     add     a1,a0,s1 # a1 = &a[i]
     add     a0,a0,s2 # a0 = &a[j]
@@ -906,17 +926,19 @@ fin:
     add     a0,a0,s1     # a0 = &a[i]
     jal     swap            # swap(char** a[i], char** &pivot);
     nop
-    lw      a0, 32(sp)
+    lw      a0, 40(fp)
     add     v0, a0, s1    #return &a[i] = a + i
 ##Epílogo
-    lw		s0, 16(sp)	#reponemos el stack 
-    lw      s1, 20(sp)
-    lw      s2, 24(sp)
-    lw      ra, 28(sp)
-    addiu   sp,sp,32
+    lw		s0, 16(fp)	#reponemos el stack 
+    lw      s1, 20(fp)
+    lw      s2, 24(fp)
+    lw      gp, 28(fp)
+    lw      ra, 36(fp)
+    move    sp,fp
+    lw      fp,32(sp)
+    addiu   sp,sp,40
     jr		ra				# jump to ra
     
-
 
 ##swap(void* a, void* b);
 swap:
@@ -930,23 +952,26 @@ swap:
 ##cmp_alfa(char*a,char*b); 1 si b>a, 0 si a>=b
 cmp_alfa:
 ##Prólogo
-    addiu   sp,sp,-32    #manejo del stack
-    sw		s0, 16(sp)	 # en s0 guardaremos contador i	
-    sw      s1, 20(sp)    # en s1 guardaremos a[i]
-    sw      s2, 24(sp)    # en s2 guardaremos b[i]
-    sw      ra, 28(sp)    # guardamos la direccion de retorno
+    addiu   sp, sp, -40     #manejo del stack
+    sw      fp, 32(sp)
+    move    fp, sp
+    sw		s0, 16(fp)	 # en s0 guardaremos contador i	
+    sw      s1, 20(fp)    # en s1 guardaremos a[i]
+    sw      s2, 24(fp)    # en s2 guardaremos b[i]
+    sw      gp, 28(fp)    
+    sw      ra, 36(fp)    # guardamos la direccion de retorno
     
     ##guardamos los argumentos en el stackframe del caller
-    sw      a0, 32(sp)    
-    sw      a1, 36(sp)
+    sw      a0, 40(fp)    
+    sw      a1, 44(fp)
 
     li  s0,0   # s0 = i = 0
     li  s1,0   # s1 = 0 guardaremos a[i]
     li  s2,0   # s2 = 0 guardaremos b[i]
 
 loop_cmp_alfa:
-    lw      a0,32(sp)   #recuperamos los argumentos del stackframe del caller
-    lw      a1,36(sp)
+    lw      a0,40(sp)   #recuperamos los argumentos del stackframe del caller
+    lw      a1,44(sp)
     add     t1,a0,s0     # t1 = &a[i]
     add     t2,a1,s0     # t2 = &b[i]
     lbu     s1,0(t1)     # s1 = a[i]
@@ -963,11 +988,9 @@ loop_cmp_alfa:
     bgt     s2, s1, b_mayor   # if b[i] > a[i] then b_mayor
     addi    s0, s0, 1         # i += 1
     b       loop_cmp_alfa
-    nop
 a_mayor:
     li  v0,0       #return 0
     b   fin_cmp_alfa
-    nop
 b_mayor:                            
     li v0,1       #return 1
     b fin_cmp_alfa
@@ -977,10 +1000,13 @@ fin_cmp_alfa:
     lw		s0, 16(sp)	#reponemos el stack 
     lw      s1, 20(sp)
     lw      s2, 24(sp)
-    lw      ra, 28(sp)
-    addiu   sp,sp,32
+    lw      gp, 28(sp)
+    lw      ra, 36(sp)
+    move    sp, fp
+    lw      fp, 32(sp)
+    addiu   sp,sp,40
     jr		ra				# jump to ra
-    
+
     
 
 
@@ -1016,7 +1042,7 @@ fin_cmp_int:
 
 ## int mi_atoi(char* str)
 mi_atoi:
-    ##no tiene data ni subrutinas, no hay manejo de stackframe
+    ## no hay manejo de stackframe
     li      t5, 10     # t5 = 10
     li      t6, 45     # t6 = '-'
     li      t7, 43     # t7 = '+'
