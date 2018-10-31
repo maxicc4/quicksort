@@ -33,7 +33,7 @@ static void process_file(char *fileName)
 {
 	FILE *input;
 	char line[20];
-	int address, value;
+	int address, value, miss_rate;
 	char *token;
 
 	if (!(input = fopen(fileName, "r"))) {
@@ -77,7 +77,7 @@ static void process_file(char *fileName)
 			}
 
 			value = atoi(token);
-			printf("%d", write_byte(address, value));
+			printf("%d", (unsigned char) write_byte(address, value));
 		} else if (strncmp(token, "R", 2) == 0) {
 			token = strtok(NULL, " ");
 			if (token == NULL) {
@@ -89,7 +89,7 @@ static void process_file(char *fileName)
 				fprintf(stderr, "Error, direccion invalida en la linea %d.\n", i);
 				exit(1);
 			}
-			printf("%d", read_byte(address));
+			printf("%d", (unsigned char) read_byte(address));
 		} else if (strncmp(token, "MR", 2) == 0) {
 			printf("%d%%", get_miss_rate());
 		} else {

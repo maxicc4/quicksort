@@ -72,6 +72,7 @@ int find_lru(int set){
         }
         if (cache_mem[set][i].last_use > last_use){
             lru = i;
+            last_use = cache_mem[set][i].last_use;
         }
     }
     return lru;
@@ -93,7 +94,6 @@ void read_block(int blocknum){
     slot->dirty = false;
     slot->valid = true;
     slot->tag = blocknum >> INDEX_BITS;
-    aumentar_last_use(set);
     slot->last_use = 0;
 }
 
@@ -108,7 +108,6 @@ void write_block(int way, int setnum){
     if (!slot->valid) return;
     int blocknum = slot_to_blocknum(slot->tag,setnum);
     memcpy(ppal_mem[blocknum],slot->data,BLOCK_SIZE);
-    aumentar_last_use(setnum);
     slot->dirty = false;
     slot->last_use = 0;
 }
@@ -133,10 +132,10 @@ int read_byte(int address){
     int tag = add_to_tag(address);
     int set = add_to_set(address);
     int offset = add_to_offset(address);
+    aumentar_last_use(set);
     for (int i = 0; i<VIAS ; i++){
         if ((cache_mem[set][i].valid) && (cache_mem[set][i].tag == tag)){
             accesos += 1;
-            aumentar_last_use(set);
             cache_mem[set][i].last_use = 0;
             return (unsigned int) cache_mem[set][i].data[offset];
         }
@@ -150,25 +149,21 @@ int read_byte(int address){
 
 
 int write_byte(int address, char value){
-    if (address >= PPAL_MEM_SIZE){
-         return -1;
-         fprintf(stderr,"direccion invalida");
-    }
     int tag = add_to_tag(address);
     int set = add_to_set(address);
     int offset = add_to_offset(address);
-
+    aumentar_last_use(set);
 
     for (int i = 0; i<VIAS ; i++){
         if ((cache_mem[set][i].valid) && cache_mem[set][i].tag == tag){
             cache_mem[set][i].data[offset] = value;
             cache_mem[set][i].dirty = true;
+            aumentar_last_use(set);
             cache_mem[set][i].last_use = 0;
             accesos+=1;
             return (unsigned int) value;
         }
     }
-    
     int lru = find_lru(set);
     int blocknum = add_to_blocknum(address);
     read_block(blocknum);
@@ -176,8 +171,7 @@ int write_byte(int address, char value){
     cache_mem[set][lru].dirty = true;
     accesos+=1;
     misses+=1;
-    return 0;
-
+    return value;
 }
 
 int get_miss_rate(){
